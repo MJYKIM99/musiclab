@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Page - Ocean Loop</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #0f0;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid #0f0;
+    }
+    .error {
+      border-left-color: #f00;
+      color: #f00;
+    }
+    .success {
+      border-left-color: #0f0;
+      color: #0f0;
+    }
+    pre {
+      background: #000;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌊 Ocean Loop - System Test</h1>
+  <div id="results"></div>
+
+  <script>
+    const results = document.getElementById('results');
+
+    function addStatus(message, isError = false) {
+      const div = document.createElement('div');
+      div.className = `status ${isError ? 'error' : 'success'}`;
+      div.textContent = message;
+      results.appendChild(div);
+    }
+
+    // Test 1: Check if we can access the page
+    addStatus('✓ HTML page loaded successfully');
+
+    // Test 2: Try loading p5.js
+    const p5Script = document.createElement('script');
+    p5Script.src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js';
+    p5Script.onload = () => {
+      addStatus('✓ p5.js library loaded');
+
+      // Test 3: Try loading p5.sound
+      const soundScript = document.createElement('script');
+      soundScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js';
+      soundScript.onload = () => {
+        addStatus('✓ p5.sound library loaded');
+
+        // Test 4: Load project files
+        const files = ['Loop.js', 'sketch.js', 'interactions.js'];
+        let loaded = 0;
+
+        files.forEach(file => {
+          fetch(file)
+            .then(response => {
+              if (response.ok) {
+                addStatus(`✓ ${file} found (${response.status})`);
+                loaded++;
+                if (loaded === files.length) {
+                  addStatus('✓ All project files accessible');
+                  addStatus('✓✓✓ System test PASSED - Ready to run!');
+
+                  const link = document.createElement('div');
+                  link.className = 'status success';
+                  link.style.marginTop = '20px';
+                  link.innerHTML = '<strong>→ Open <a href="index.html" style="color:#0f0">index.html</a> to start the project</strong>';
+                  results.appendChild(link);
+                }
+              } else {
+                addStatus(`✗ ${file} error (${response.status})`, true);
+              }
+            })
+            .catch(err => {
+              addStatus(`✗ ${file} failed: ${err.message}`, true);
+            });
+        });
+      };
+      soundScript.onerror = () => addStatus('✗ p5.sound library failed to load', true);
+      document.head.appendChild(soundScript);
+    };
+    p5Script.onerror = () => addStatus('✗ p5.js library failed to load', true);
+    document.head.appendChild(p5Script);
+
+    // Test 5: Check server info
+    addStatus(`✓ Server URL: ${window.location.href}`);
+    addStatus(`✓ Protocol: ${window.location.protocol}`);
+  </script>
+</body>
+</html>

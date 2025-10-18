@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - Ocean Loop</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+  <style>
+    body { margin: 0; background: #111; }
+    #debug {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 9999;
+      max-width: 300px;
+    }
+    #debug div { margin: 3px 0; }
+  </style>
+</head>
+<body>
+  <div id="sketch-holder"></div>
+  <div id="debug">
+    <div>🌊 Debug Info</div>
+    <div id="loops-count">Loops: 0</div>
+    <div id="mouse-pos">Mouse: 0, 0</div>
+    <div id="audio-state">Audio: inactive</div>
+    <div id="fps">FPS: 0</div>
+  </div>
+
+  <script>
+    // Debug variables
+    let loops = [];
+    let loopRadius = 100;
+
+    function setup() {
+      let canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent('sketch-holder');
+      frameRate(30);
+
+      // Simple test - draw a white circle
+      console.log('✅ Setup complete');
+    }
+
+    function draw() {
+      background(0);
+
+      // Update debug info
+      document.getElementById('loops-count').textContent = 'Loops: ' + loops.length;
+      document.getElementById('mouse-pos').textContent = 'Mouse: ' + mouseX + ', ' + mouseY;
+      document.getElementById('fps').textContent = 'FPS: ' + Math.floor(frameRate());
+
+      // Draw preview circle
+      noStroke();
+      fill(100, 200, 255, 100);
+      ellipse(mouseX, mouseY, loopRadius);
+
+      // Draw all loops
+      for (let i = 0; i < loops.length; i++) {
+        let loop = loops[i];
+
+        // Simple white circle for each loop
+        stroke(255, 200);
+        strokeWeight(2);
+        noFill();
+
+        for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+          let x = loop.x + loop.r * cos(angle);
+          let y = loop.y + loop.r * sin(angle);
+          point(x, y);
+        }
+
+        // Move loop slightly
+        loop.x += loop.vx;
+        loop.y += loop.vy;
+
+        // Shrink if needed
+        if (loop.shrink && loop.r > 0) {
+          loop.r -= 0.5;
+        }
+      }
+
+      // Remove dead loops
+      loops = loops.filter(l => l.r > 1);
+    }
+
+    function mousePressed() {
+      // Create new loop
+      let newLoop = {
+        x: mouseX,
+        y: mouseY,
+        r: loopRadius,
+        vx: random(-2, 2),
+        vy: random(-2, 2),
+        shrink: false
+      };
+      loops.push(newLoop);
+
+      console.log('✅ Created loop at:', mouseX, mouseY);
+      document.getElementById('audio-state').textContent = 'Audio: active';
+
+      return false;
+    }
+
+    function keyPressed() {
+      if (key === ' ') {
+        // Reset
+        loops = [];
+        console.log('✅ Reset all loops');
+      }
+      if (key === 'b' || key === 'B') {
+        // Shrink all
+        loops.forEach(l => l.shrink = true);
+        console.log('✅ Shrinking all loops');
+      }
+    }
+
+    console.log('🌊 Debug page loaded');
+    console.log('Controls:');
+    console.log('  Click: Create loop');
+    console.log('  Space: Reset');
+    console.log('  B: Shrink all');
+  </script>
+</body>
+</html>

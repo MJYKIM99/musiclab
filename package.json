@@ -1,0 +1,20 @@
+{
+  "name": "ocean-loop-project",
+  "version": "1.0.0",
+  "description": "An interactive audio-visual experiment exploring particle systems and generative art",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000 -o",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "p5js",
+    "generative-art",
+    "audio-visual",
+    "interactive",
+    "particles",
+    "creative-coding"
+  ],
+  "author": "",
+  "license": "MIT"
+}
