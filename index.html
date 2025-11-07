@@ -10,6 +10,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
 
+  <!-- dat.GUI for control panel -->
+  <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/build/dat.gui.min.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -99,6 +102,34 @@
       width: auto;
       filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.3));
     }
+
+    /* dat.GUI custom styling */
+    .dg.ac {
+      z-index: 1001 !important;
+    }
+
+    .dg.main {
+      opacity: 0.95;
+      text-shadow: none !important;
+    }
+
+    .dg .close-button {
+      background-color: rgba(100, 200, 255, 0.3);
+    }
+
+    .dg .close-button:hover {
+      background-color: rgba(100, 200, 255, 0.5);
+    }
+
+    .dg.main::-webkit-scrollbar {
+      width: 5px;
+      background: #1a1a1a;
+    }
+
+    .dg.main::-webkit-scrollbar-thumb {
+      background: rgba(100, 200, 255, 0.5);
+      border-radius: 5px;
+    }
   </style>
 </head>
 
@@ -124,8 +155,10 @@
   </div>
 
   <!-- Project JavaScript files -->
+  <script src="themes.js"></script>
   <script src="Loop.js"></script>
   <script src="sketch.js"></script>
+  <script src="ui-controls.js"></script>
   <script src="interactions.js"></script>
 </body>
 

@@ -44,8 +44,16 @@ function setup() {
   // Use RGB color mode (default) to match Loop.js
   colorMode(RGB, 255, 255, 255, 255);
 
+  // Initialize control panel and theme system
+  initGUI();
+
+  // Set initial theme background
+  const bgColor = getThemeBackground();
+  backgroundColor = bgColor[0];
+
   console.log('Ocean Loop initialized');
   console.log('Click or tap to create particles');
+  console.log('Use the control panel on the right to customize your experience!');
 }
 
 /**
@@ -56,8 +64,13 @@ function draw() {
   let totalAmplitude = calculateTotalAmplitude();
 
   // Dynamic background based on audio and particle count
-  bgAlpha = 20 + constrain(totalAmplitude * 30, 0, 60) + loops.length / 4;
-  background(0, 0, 0, bgAlpha);
+  // Use control panel backgroundAlpha if available
+  const baseAlpha = controls ? controls.backgroundAlpha : 20;
+  bgAlpha = baseAlpha + constrain(totalAmplitude * 30, 0, 60) + loops.length / 4;
+
+  // Use theme background color
+  const bgColor = getThemeBackground();
+  background(bgColor[0], bgColor[1], bgColor[2], bgAlpha);
 
   // Update and display all loops
   for (let i = loops.length - 1; i >= 0; i--) {
@@ -231,13 +244,29 @@ function calculateRadius(state, speed) {
  * Create new loop particles at specified position
  */
 function createLoops(x, y, radius) {
-  // Visual feedback for large radius
-  if (radius > 100) {
-    background(random(50, 100), random(0, 50), random(100, 150), radius / 4);
+  // Get max particles from controls, fallback to MAX_OSCILLATORS
+  const maxAllowed = controls ? controls.maxParticles : MAX_OSCILLATORS;
+
+  // Don't create if at limit
+  if (loops.length >= maxAllowed) {
+    console.log('Maximum particles reached');
+    return;
   }
 
-  // Create random number of particles (1-10)
+  // Visual feedback for large radius
+  if (radius > 100) {
+    const bgColor = getThemeBackground();
+    background(
+      bgColor[0] + random(20, 50),
+      bgColor[1] + random(0, 30),
+      bgColor[2] + random(20, 50),
+      radius / 4
+    );
+  }
+
+  // Create random number of particles (1-10), but respect max limit
   let numLoops = Math.ceil(Math.random() * 10);
+  numLoops = Math.min(numLoops, maxAllowed - loops.length);
 
   for (let i = 0; i < numLoops; i++) {
     let randomRadius = radius + random(-20, 20);
@@ -245,12 +274,7 @@ function createLoops(x, y, radius) {
     loops.push(newLoop);
   }
 
-  // Auto-reset if too many particles (performance)
-  if (loops.length > MAX_OSCILLATORS - 5) {
-    resetAll();
-  }
-
-  console.log(`Created ${numLoops} loops. Total: ${loops.length}`);
+  console.log(`Created ${numLoops} loops. Total: ${loops.length}/${maxAllowed}`);
 }
 
 /**

@@ -28,12 +28,34 @@ class Loop {
 
     // Color (for variation)
     this.hue = random(360);
+
+    // Trail system for particle path visualization
+    this.trail = [];
+    this.maxTrailLength = 50;
   }
 
   /**
    * Update particle state - movement, growth, shrinking
    */
   update() {
+    // Record position for trail (only if trails are enabled)
+    if (controls && controls.showTrails) {
+      this.trail.push({
+        x: this.pos.x,
+        y: this.pos.y,
+        alpha: 255
+      });
+
+      // Limit trail length based on control settings
+      const maxLength = controls.trailLength || this.maxTrailLength;
+      if (this.trail.length > maxLength) {
+        this.trail.shift();
+      }
+    } else {
+      // Clear trail if disabled
+      this.trail = [];
+    }
+
     // Check if particle is out of bounds
     if (!(this.pos.x > 0 && this.pos.x < width &&
           this.pos.y > 0 && this.pos.y < height)) {
@@ -71,6 +93,11 @@ class Loop {
    * Display the particle with dynamic shape based on clock state
    */
   display(allLoops, audioAmplitude) {
+    // Draw trail first (behind the particle)
+    if (controls && controls.showTrails && this.trail.length > 1) {
+      this.drawTrail();
+    }
+
     push();
 
     // Fill settings based on size
@@ -209,5 +236,40 @@ class Loop {
    */
   isDead() {
     return this.r < 0.5;
+  }
+
+  /**
+   * Draw the particle trail
+   */
+  drawTrail() {
+    if (this.trail.length < 2) return;
+
+    push();
+    noFill();
+
+    // Get theme color for trail
+    const themeColor = getThemeGlowColor();
+
+    // Draw trail as connected line with fading alpha
+    for (let i = 0; i < this.trail.length - 1; i++) {
+      const point = this.trail[i];
+      const nextPoint = this.trail[i + 1];
+
+      // Calculate alpha based on position in trail (fade out older points)
+      const alphaFactor = i / this.trail.length;
+      const alpha = alphaFactor * 150 * (controls.glowIntensity || 1.0);
+
+      // Set stroke with theme color and fading alpha
+      stroke(themeColor[0], themeColor[1], themeColor[2], alpha);
+
+      // Line thickness decreases towards the tail
+      const weight = map(i, 0, this.trail.length, 0.5, 2) * pixelDensity();
+      strokeWeight(weight);
+
+      // Draw line segment
+      line(point.x, point.y, nextPoint.x, nextPoint.y);
+    }
+
+    pop();
   }
 }

@@ -159,6 +159,13 @@ function keyPressed() {
     return false;
   }
 
+  // G - Toggle control panel (GUI)
+  if (key === 'g' || key === 'G') {
+    toggleGUI();
+    console.log('Control panel toggled');
+    return false;
+  }
+
   // M - Toggle master volume
   if (key === 'm' || key === 'M') {
     let currentVol = outputVolume();
@@ -216,5 +223,6 @@ console.log('  B: Shrink all');
 console.log('  R: Random particles');
 console.log('  F: Fullscreen');
 console.log('  H: Hide info');
+console.log('  G: Toggle control panel');
 console.log('  M: Mute/Unmute');
 console.log('  1-9: Quick spawn');
