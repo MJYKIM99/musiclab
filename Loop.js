@@ -1,10 +1,26 @@
 /**
- * Loop Class - Represents a particle with visual and audio properties
+ * @file Loop Class - Particle System
+ * @description Represents a particle with visual and audio properties.
  * Each Loop object is an animated shape that interacts with other loops
- * and responds to mouse/touch input
+ * and responds to mouse/touch input.
+ * @version 1.1.0
  */
 
+/**
+ * Loop Class - Animated particle with collision detection
+ * @class
+ * @description Creates and manages animated particle loops with physics,
+ * collision detection, and dynamic visual rendering based on mathematical patterns.
+ */
 class Loop {
+  /**
+   * Create a new Loop particle
+   * @param {number} radius - Initial radius of the particle
+   * @param {number} x - X coordinate position
+   * @param {number} y - Y coordinate position
+   * @description Initializes a new particle with random velocity, size,
+   * animation clocks, and collision tracking.
+   */
   constructor(radius, x, y) {
     // Position and movement
     this.pos = createVector(x, y);
@@ -32,6 +48,8 @@ class Loop {
 
   /**
    * Update particle state - movement, growth, shrinking
+   * @description Updates the particle's physics including position, size,
+   * and boundary conditions. Handles shrinking, growth, and movement timing.
    */
   update() {
     // Check if particle is out of bounds
@@ -69,6 +87,10 @@ class Loop {
 
   /**
    * Display the particle with dynamic shape based on clock state
+   * @param {Loop[]} allLoops - Array of all active loops for context
+   * @param {number} audioAmplitude - Current audio amplitude for visual effects
+   * @description Renders the particle with dynamic colors, shapes, and effects
+   * based on collision state, audio amplitude, and animation clock.
    */
   display(allLoops, audioAmplitude) {
     push();
@@ -148,7 +170,15 @@ class Loop {
 
   /**
    * Calculate shape based on different mathematical patterns
-   * 6 different modes create visual variety
+   * @param {number} r - Radius of the particle
+   * @param {number} angle - Current angle in the shape calculation
+   * @param {number} clock1 - Primary animation clock value
+   * @param {number} clock - Secondary animation clock value
+   * @param {number} totalLoops - Total number of active loops
+   * @param {number} amp - Audio amplitude for modulation
+   * @returns {number} Calculated shape offset value
+   * @description Implements 6 different mathematical pattern modes for
+   * visual variety including sine waves, noise patterns, and organic shapes.
    */
   calculateShape(r, angle, clock1, clock, totalLoops, amp) {
     let mode = Math.floor(clock1 + totalLoops / 2) % 6;
@@ -182,6 +212,9 @@ class Loop {
 
   /**
    * Check for collisions with other loops and mouse
+   * @param {Loop[]} allLoops - Array of all loops to check against
+   * @description Detects and tracks collisions with other particles and
+   * the mouse cursor. Updates the collisions array for audio triggering.
    */
   checkCollisions(allLoops) {
     for (let i = 0; i < allLoops.length; i++) {
@@ -206,6 +239,9 @@ class Loop {
 
   /**
    * Check if particle should be removed
+   * @returns {boolean} True if particle radius is below 0.5
+   * @description Determines if a particle has shrunk small enough to be
+   * removed from the simulation and recycled.
    */
   isDead() {
     return this.r < 0.5;

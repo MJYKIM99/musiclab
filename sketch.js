@@ -1,30 +1,63 @@
 /**
- * Ocean Loop - Audio Visual Experiment
- * An interactive generative art piece exploring particle systems,
- * collision detection, and audio-visual synthesis
+ * @file Ocean Loop - Audio Visual Experiment
+ * @description An interactive generative art piece exploring particle systems,
+ * collision detection, and audio-visual synthesis.
+ * @author yijiayidesign
+ * @version 1.1.0
+ * @license MIT
  */
 
 // Disable p5.js friendly error system for better performance
 p5.disableFriendlyErrors = true;
 
-// Global variables
+/**
+ * @type {Loop[]} Array of active particle loops
+ */
 let loops = [];
+
+/**
+ * @type {p5.Oscillator[]} Array of pre-allocated oscillators
+ */
 let oscillators = [];
+
+/**
+ * @type {p5.Envelope[]} Array of envelope generators
+ */
 let envelopes = [];
+
+/**
+ * @type {p5.Reverb} Reverb effect processor
+ */
 let reverb;
+
+/**
+ * @type {number} Preview radius for particle creation
+ */
 let radiusPreview = 100;
+
+/**
+ * @type {number} State for radius animation (-1: idle, 1: growing)
+ */
 let radiusState = -1;
 
 // Audio settings
+/** @constant {number} Maximum number of oscillators */
 const MAX_OSCILLATORS = 40;
+
+/** @constant {number} Base frequency in Hz */
 const BASE_FREQUENCY = 200;
 
 // Visual settings
+/** @type {number} Background color value */
 let backgroundColor = 0;
+
+/** @type {number} Background alpha transparency */
 let bgAlpha = 20;
 
 /**
- * p5.js setup function - runs once at start
+ * p5.js setup function - Initialize canvas, audio, and settings
+ * @description Called once when the application starts. Sets up the canvas,
+ * initializes audio components, and configures initial parameters.
  */
 function setup() {
   // Create canvas that fills window
@@ -49,7 +82,9 @@ function setup() {
 }
 
 /**
- * p5.js draw function - runs every frame
+ * p5.js draw function - Main render loop
+ * @description Called continuously (30 FPS by default). Updates and renders
+ * all particles, handles audio playback, and manages the visual display.
  */
 function draw() {
   // Calculate total audio amplitude from all oscillators
@@ -96,6 +131,8 @@ function draw() {
 
 /**
  * Initialize audio components
+ * @description Sets up the reverb effect, master volume, and pre-allocates
+ * all oscillators with envelopes for better performance.
  */
 function initAudio() {
   // Create reverb effect
@@ -115,6 +152,9 @@ function initAudio() {
 
 /**
  * Create an oscillator with envelope for smooth audio
+ * @param {number} index - The oscillator index for frequency calculation
+ * @description Creates a new oscillator with randomized waveform, calculates
+ * frequency based on index, and attaches an envelope for smooth attack/release.
  */
 function createOscillatorWithEnvelope(index) {
   // Create oscillator
@@ -146,6 +186,10 @@ function createOscillatorWithEnvelope(index) {
 
 /**
  * Handle audio playback for a loop based on its state
+ * @param {Loop} loop - The loop particle to handle audio for
+ * @param {number} index - The oscillator index associated with this loop
+ * @description Determines if sound should play based on collision state,
+ * calculates stereo panning, volume, and frequency modulation.
  */
 function handleLoopAudio(loop, index) {
   if (index >= oscillators.length) return;
@@ -186,6 +230,9 @@ function handleLoopAudio(loop, index) {
 
 /**
  * Calculate total amplitude across all oscillators
+ * @returns {number} The sum of all oscillator amplitudes (0.0 to 1.0+)
+ * @description Iterates through all active oscillators and sums their
+ * current amplitude values for dynamic background effects.
  */
 function calculateTotalAmplitude() {
   let total = 0;
@@ -199,6 +246,10 @@ function calculateTotalAmplitude() {
 
 /**
  * Check if loop is visible in canvas
+ * @param {Loop} loop - The loop to check
+ * @returns {boolean} True if the loop is within or near the canvas bounds
+ * @description Performs bounds checking with a 100px buffer to determine
+ * if a loop should be rendered and processed.
  */
 function isLoopVisible(loop) {
   return loop.pos.x > -100 && loop.pos.x < width + 100 &&
@@ -207,6 +258,8 @@ function isLoopVisible(loop) {
 
 /**
  * Draw the radius preview circle
+ * @description Renders a semi-transparent blue circle at the mouse position
+ * showing the size of particles that will be created.
  */
 function drawRadiusPreview() {
   noStroke();
@@ -216,6 +269,11 @@ function drawRadiusPreview() {
 
 /**
  * Calculate radius based on interaction state
+ * @param {number} state - Current interaction state (-1: idle, 1: growing)
+ * @param {number} speed - Growth speed increment
+ * @returns {number} The calculated preview radius
+ * @description Updates the preview radius based on user interaction state,
+ * either growing or randomizing the value.
  */
 function calculateRadius(state, speed) {
   if (state === 1) {
@@ -229,6 +287,11 @@ function calculateRadius(state, speed) {
 
 /**
  * Create new loop particles at specified position
+ * @param {number} x - X coordinate for particle creation
+ * @param {number} y - Y coordinate for particle creation
+ * @param {number} radius - Base radius for new particles
+ * @description Creates 1-10 new particle loops with randomized sizes at the
+ * specified position. Provides visual feedback and auto-resets if too many particles.
  */
 function createLoops(x, y, radius) {
   // Visual feedback for large radius
@@ -255,6 +318,8 @@ function createLoops(x, y, radius) {
 
 /**
  * Remove a loop and clean up
+ * @param {number} index - Array index of the loop to remove
+ * @description Removes a loop from the active loops array at the specified index.
  */
 function removeLoop(index) {
   loops.splice(index, 1);
@@ -262,6 +327,8 @@ function removeLoop(index) {
 
 /**
  * Reset all particles and audio
+ * @description Clears all active particles, fades out all audio oscillators,
+ * and resets the canvas to a clean state.
  */
 function resetAll() {
   console.log('Resetting all particles');
@@ -282,6 +349,8 @@ function resetAll() {
 
 /**
  * Handle window resize
+ * @description Automatically called when the browser window is resized.
+ * Updates canvas dimensions to fill the new window size.
  */
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
