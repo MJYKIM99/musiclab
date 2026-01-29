@@ -4,7 +4,9 @@
  */
 
 const SCREENSHOT_COOLDOWN_MS = 1200;
+const LONG_PRESS_THRESHOLD_MS = 350;
 let lastScreenshotAt = 0;
+let pressStartAt = 0;
 
 function canTakeScreenshot() {
   const now = millis();
@@ -30,7 +32,9 @@ function ensureAudioContext() {
 function mousePressed() {
   radiusState = 1;
   ensureAudioContext();
-  createLoops(mouseX, mouseY, radiusPreview);
+  pressStartAt = millis();
+  // Short-press baseline: spawn a small burst immediately
+  createLoops(mouseX, mouseY, Math.max(60, radiusPreview * 0.6));
   return false; // Prevent default
 }
 
@@ -61,6 +65,11 @@ function mouseDragged() {
  */
 function mouseReleased() {
   radiusState = 0;
+  const heldMs = millis() - pressStartAt;
+  if (heldMs >= LONG_PRESS_THRESHOLD_MS) {
+    // Long-press: spawn a larger burst on release
+    createLoops(mouseX, mouseY, Math.max(140, radiusPreview * 1.1));
+  }
   return false; // Prevent default
 }
 
@@ -70,7 +79,8 @@ function mouseReleased() {
 function touchStarted() {
   radiusState = 1;
   ensureAudioContext();
-  createLoops(mouseX, mouseY, radiusPreview);
+  pressStartAt = millis();
+  createLoops(mouseX, mouseY, Math.max(60, radiusPreview * 0.6));
   return false; // Prevent default
 }
 
@@ -110,6 +120,10 @@ function touchMoved() {
  */
 function touchEnded() {
   radiusState = 0;
+  const heldMs = millis() - pressStartAt;
+  if (heldMs >= LONG_PRESS_THRESHOLD_MS) {
+    createLoops(mouseX, mouseY, Math.max(140, radiusPreview * 1.1));
+  }
   return false; // Prevent default
 }
 

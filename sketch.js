@@ -242,7 +242,8 @@ function handleLoopAudio(loop, index) {
   const isVisible = isLoopVisible(loop);
   const collisionHit = (loop.collisions.length % 3 === 1 && loop.clock1 > 160);
   const mouseHit = loop.collisions.mouse;
-  const trigger = (collisionHit && !loop.wasColliding) || (mouseHit && !loop.wasMouseColliding);
+  const newCollisionBurst = loop.lastCollisionCount === 0 && loop.collisions.length > 0;
+  const trigger = (collisionHit && !loop.wasColliding && newCollisionBurst) || (mouseHit && !loop.wasMouseColliding);
 
   // End expired sound event
   if (loop.soundStartAt !== 0 && now >= loop.soundUntil) {
@@ -265,6 +266,7 @@ function handleLoopAudio(loop, index) {
 
   loop.wasColliding = collisionHit;
   loop.wasMouseColliding = mouseHit;
+  loop.lastCollisionCount = loop.collisions.length;
 
   const isActive = loop.soundStartAt !== 0 && now < loop.soundUntil && isVisible;
 

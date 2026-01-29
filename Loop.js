@@ -46,6 +46,7 @@ class Loop {
     this.soundStartAt = 0;
     this.wasColliding = false;
     this.wasMouseColliding = false;
+    this.lastCollisionCount = 0;
 
     // Color (for variation)
     this.hue = random(360);
