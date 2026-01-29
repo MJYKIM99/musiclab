@@ -68,7 +68,7 @@ function mouseReleased() {
   const heldMs = millis() - pressStartAt;
   if (heldMs >= LONG_PRESS_THRESHOLD_MS) {
     // Long-press: spawn a larger burst on release
-    createLoops(mouseX, mouseY, Math.max(140, radiusPreview * 1.1));
+    createLoops(mouseX, mouseY, Math.max(180, radiusPreview * 1.4));
   }
   return false; // Prevent default
 }
@@ -122,7 +122,7 @@ function touchEnded() {
   radiusState = 0;
   const heldMs = millis() - pressStartAt;
   if (heldMs >= LONG_PRESS_THRESHOLD_MS) {
-    createLoops(mouseX, mouseY, Math.max(140, radiusPreview * 1.1));
+    createLoops(mouseX, mouseY, Math.max(180, radiusPreview * 1.4));
   }
   return false; // Prevent default
 }
