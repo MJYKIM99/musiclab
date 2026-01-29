@@ -30,6 +30,7 @@ function ensureAudioContext() {
 function mousePressed() {
   radiusState = 1;
   ensureAudioContext();
+  createLoops(mouseX, mouseY, radiusPreview);
   return false; // Prevent default
 }
 
@@ -60,7 +61,6 @@ function mouseDragged() {
  */
 function mouseReleased() {
   radiusState = 0;
-  createLoops(mouseX, mouseY, radiusPreview);
   return false; // Prevent default
 }
 
@@ -70,6 +70,7 @@ function mouseReleased() {
 function touchStarted() {
   radiusState = 1;
   ensureAudioContext();
+  createLoops(mouseX, mouseY, radiusPreview);
   return false; // Prevent default
 }
 
@@ -109,12 +110,6 @@ function touchMoved() {
  */
 function touchEnded() {
   radiusState = 0;
-
-  // Create loops at touch position
-  if (touches.length === 0) {
-    createLoops(mouseX, mouseY, radiusPreview);
-  }
-
   return false; // Prevent default
 }
 

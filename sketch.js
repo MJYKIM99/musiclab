@@ -334,6 +334,7 @@ function isLoopVisible(loop) {
  * showing the size of particles that will be created.
  */
 function drawRadiusPreview() {
+  if (radiusState !== 1) return;
   noStroke();
   fill(100, 200, 255, 30);  // Light blue, semi-transparent
   ellipse(mouseX, mouseY, calculateRadius(radiusState, 7));
