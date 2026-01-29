@@ -44,6 +44,8 @@ class Loop {
     this.lastSoundAt = 0;
     this.soundUntil = 0;
     this.soundStartAt = 0;
+    this.wasColliding = false;
+    this.wasMouseColliding = false;
 
     // Color (for variation)
     this.hue = random(360);

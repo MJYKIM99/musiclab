@@ -56,10 +56,10 @@ const CONFIG = {
   audioPanSlew: 0.25,
   audioFreqModMin: 0.85,
   audioFreqModMax: 1.05,
-  maxActiveSounds: 12,
+  maxActiveSounds: 6,
   soundCooldownMs: 180,
-  soundMinDurationMs: 180,
-  soundMaxDurationMs: 700,
+  soundMinDurationMs: 120,
+  soundMaxDurationMs: 300,
   lowpassFreq: 1200,
   lowpassRes: 1.1,
   reverbWet: 0.2
@@ -237,12 +237,12 @@ function handleLoopAudio(loop, index) {
   let osc = oscillators[index];
   if (!osc) return;
 
-  // Determine if sound should play
-  let shouldPlay = (loop.collisions.length % 3 === 1 && loop.clock1 > 160) ||
-                   loop.collisions.mouse;
-
+  // Determine if sound should play (edge-triggered)
   const now = millis();
   const isVisible = isLoopVisible(loop);
+  const collisionHit = (loop.collisions.length % 3 === 1 && loop.clock1 > 160);
+  const mouseHit = loop.collisions.mouse;
+  const trigger = (collisionHit && !loop.wasColliding) || (mouseHit && !loop.wasMouseColliding);
 
   // End expired sound event
   if (loop.soundStartAt !== 0 && now >= loop.soundUntil) {
@@ -251,8 +251,8 @@ function handleLoopAudio(loop, index) {
     osc.amp(0, 0.08);
   }
 
-  // Start a new sound event only when triggered
-  if (shouldPlay && loop.soundStartAt === 0 && isVisible) {
+  // Start a new sound event only on new trigger
+  if (trigger && loop.soundStartAt === 0 && isVisible) {
     const canStart = now - loop.lastSoundAt > CONFIG.soundCooldownMs &&
       activeSoundCount < CONFIG.maxActiveSounds;
 
@@ -262,6 +262,9 @@ function handleLoopAudio(loop, index) {
       loop.lastSoundAt = now;
     }
   }
+
+  loop.wasColliding = collisionHit;
+  loop.wasMouseColliding = mouseHit;
 
   const isActive = loop.soundStartAt !== 0 && now < loop.soundUntil && isVisible;
 
