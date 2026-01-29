@@ -43,22 +43,24 @@ let radiusState = -1;
 // Runtime configuration
 const CONFIG = {
   maxOscillators: 40,
-  baseFrequency: 200,
+  baseFrequency: 160,
   targetFps: 30,
   backgroundAlphaBase: 20,
   backgroundAlphaMax: 60,
   previewRadiusMin: 100,
   previewRadiusMaxDivisor: 6,
-  audioMasterVolume: 0.18,
-  audioAmpMin: 0.03,
-  audioAmpMax: 0.25,
-  audioAmpMouseBoost: 1.2,
-  audioPanSlew: 0.2,
-  audioFreqModMin: 0.9,
-  audioFreqModMax: 1.15,
-  lowpassFreq: 1600,
-  lowpassRes: 1.2,
-  reverbWet: 0.25
+  audioMasterVolume: 0.16,
+  audioAmpMin: 0.02,
+  audioAmpMax: 0.2,
+  audioAmpMouseBoost: 1.1,
+  audioPanSlew: 0.25,
+  audioFreqModMin: 0.85,
+  audioFreqModMax: 1.05,
+  maxActiveSounds: 12,
+  soundCooldownMs: 180,
+  lowpassFreq: 1200,
+  lowpassRes: 1.1,
+  reverbWet: 0.2
 };
 
 /** @type {p5.LowPass} Low-pass filter to soften high frequencies */
@@ -73,6 +75,9 @@ let bgAlpha = 20;
 
 /** @type {number} Last stats update timestamp */
 let lastStatsUpdate = 0;
+
+/** @type {number} Active sounds in current frame */
+let activeSoundCount = 0;
 
 /**
  * p5.js setup function - Initialize canvas, audio, and settings
@@ -115,6 +120,7 @@ function draw() {
   background(0, 0, 0, bgAlpha);
 
   // Update and display all loops
+  activeSoundCount = 0;
   for (let i = loops.length - 1; i >= 0; i--) {
     let loop = loops[i];
 
@@ -196,7 +202,7 @@ function createOscillatorWithEnvelope(index) {
   osc._waveType = waveType;
 
   // Set frequency based on index
-  let freq = CONFIG.baseFrequency + (index * 50) % 800;
+  let freq = CONFIG.baseFrequency + (index * 35) % 600;
   osc.freq(freq);
 
   // Create envelope for smooth attack/release
@@ -234,6 +240,13 @@ function handleLoopAudio(loop, index) {
                    loop.collisions.mouse;
 
   if (shouldPlay && isLoopVisible(loop)) {
+    const now = millis();
+    const canPlay = now - loop.lastSoundAt > CONFIG.soundCooldownMs;
+    if (!canPlay || activeSoundCount >= CONFIG.maxActiveSounds) {
+      osc.amp(0, 0.1);
+      return;
+    }
+
     // Calculate stereo panning based on position
     let panning = constrain(
       map(width > height ? loop.pos.x : loop.pos.y,
@@ -257,6 +270,9 @@ function handleLoopAudio(loop, index) {
     // Modulate frequency based on size and position (narrower range)
     let freqMod = map(loop.r, 50, (width + height) / 3, CONFIG.audioFreqModMin, CONFIG.audioFreqModMax);
     osc.freq(CONFIG.baseFrequency * freqMod + index * 30);
+
+    loop.lastSoundAt = now;
+    activeSoundCount++;
 
   } else {
     // Fade out
