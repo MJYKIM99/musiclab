@@ -242,29 +242,31 @@ function handleLoopAudio(loop, index) {
                    loop.collisions.mouse;
 
   const now = millis();
-  if (shouldPlay) {
-    loop.soundUntil = Math.max(loop.soundUntil, now + CONFIG.soundMinDurationMs);
+  const isVisible = isLoopVisible(loop);
+
+  // End expired sound event
+  if (loop.soundStartAt !== 0 && now >= loop.soundUntil) {
+    loop.soundStartAt = 0;
+    loop.soundUntil = 0;
+    osc.amp(0, 0.08);
   }
 
-  const isActive = now < loop.soundUntil && isLoopVisible(loop);
+  // Start a new sound event only when triggered
+  if (shouldPlay && loop.soundStartAt === 0 && isVisible) {
+    const canStart = now - loop.lastSoundAt > CONFIG.soundCooldownMs &&
+      activeSoundCount < CONFIG.maxActiveSounds;
+
+    if (canStart) {
+      loop.soundStartAt = now;
+      loop.soundUntil = now + random(CONFIG.soundMinDurationMs, CONFIG.soundMaxDurationMs);
+      loop.lastSoundAt = now;
+    }
+  }
+
+  const isActive = loop.soundStartAt !== 0 && now < loop.soundUntil && isVisible;
 
   if (isActive) {
-    const canPlay = now - loop.lastSoundAt > CONFIG.soundCooldownMs;
-    if (!canPlay || activeSoundCount >= CONFIG.maxActiveSounds) {
-      osc.amp(0, 0.1);
-      return;
-    }
-
-    if (loop.soundStartAt === 0) {
-      loop.soundStartAt = now;
-    }
-
-    if (now - loop.soundStartAt > CONFIG.soundMaxDurationMs) {
-      loop.soundUntil = 0;
-      loop.soundStartAt = 0;
-      osc.amp(0, 0.08);
-      return;
-    }
+    activeSoundCount++;
 
     // Calculate stereo panning based on position
     let panning = constrain(
@@ -290,12 +292,8 @@ function handleLoopAudio(loop, index) {
     let freqMod = map(loop.r, 50, (width + height) / 3, CONFIG.audioFreqModMin, CONFIG.audioFreqModMax);
     osc.freq(CONFIG.baseFrequency * freqMod + index * 30);
 
-    loop.lastSoundAt = now;
-    activeSoundCount++;
-
   } else {
-    loop.soundStartAt = 0;
-    // Fade out
+    // Fade out when inactive
     osc.amp(0, 0.08);
   }
 }
