@@ -49,8 +49,20 @@ const CONFIG = {
   backgroundAlphaMax: 60,
   previewRadiusMin: 100,
   previewRadiusMaxDivisor: 6,
-  audioMasterVolume: 0.3
+  audioMasterVolume: 0.18,
+  audioAmpMin: 0.03,
+  audioAmpMax: 0.25,
+  audioAmpMouseBoost: 1.2,
+  audioPanSlew: 0.2,
+  audioFreqModMin: 0.9,
+  audioFreqModMax: 1.15,
+  lowpassFreq: 1600,
+  lowpassRes: 1.2,
+  reverbWet: 0.25
 };
+
+/** @type {p5.LowPass} Low-pass filter to soften high frequencies */
+let lowpass;
 
 // Visual settings
 /** @type {number} Background color value */
@@ -149,6 +161,12 @@ function initAudio() {
   // Create reverb effect
   reverb = new p5.Reverb();
   reverb.amp(0.5);
+  reverb.drywet(CONFIG.reverbWet);
+
+  // Low-pass filter to reduce harshness
+  lowpass = new p5.LowPass();
+  lowpass.freq(CONFIG.lowpassFreq);
+  lowpass.res(CONFIG.lowpassRes);
 
   // Set master volume using p5.sound function
   outputVolume(CONFIG.audioMasterVolume);
@@ -171,9 +189,11 @@ function createOscillatorWithEnvelope(index) {
   // Create oscillator
   let osc = new p5.Oscillator();
 
-  // Randomize waveform type for variety
-  let waveTypes = ['sine', 'triangle', 'sawtooth', 'square'];
-  osc.setType(waveTypes[index % waveTypes.length]);
+  // Randomize waveform type for variety (bias toward softer tones)
+  let waveTypes = ['sine', 'triangle', 'sine', 'triangle', 'sawtooth', 'square'];
+  let waveType = waveTypes[index % waveTypes.length];
+  osc.setType(waveType);
+  osc._waveType = waveType;
 
   // Set frequency based on index
   let freq = CONFIG.baseFrequency + (index * 50) % 800;
@@ -184,8 +204,9 @@ function createOscillatorWithEnvelope(index) {
   env.setADSR(0.5, 0.3, 0.4, 1.0);
   env.setRange(0.3, 0);
 
-  // Connect to reverb
-  reverb.process(osc);
+  // Connect to low-pass then reverb
+  lowpass.process(osc);
+  reverb.process(lowpass);
 
   // Start oscillator but at 0 volume
   osc.amp(0);
@@ -221,16 +242,20 @@ function handleLoopAudio(loop, index) {
         -1.0, 1.0),
       -1, 1
     );
-    osc.pan(panning);
+    osc.pan(panning, CONFIG.audioPanSlew);
 
-    // Calculate volume based on radius
-    let volume = map(loop.r, 50, (width + height) / 3, 0.1, 0.5);
-    volume = loop.collisions.mouse ? volume * 1.5 : volume;
+    // Calculate volume based on radius (softer range)
+    let volume = map(loop.r, 50, (width + height) / 3, CONFIG.audioAmpMin, CONFIG.audioAmpMax);
+    volume = loop.collisions.mouse ? volume * CONFIG.audioAmpMouseBoost : volume;
+
+    if (osc._waveType === 'sawtooth' || osc._waveType === 'square') {
+      volume *= 0.75;
+    }
 
     osc.amp(volume, 0.3);
 
-    // Modulate frequency based on size and position
-    let freqMod = map(loop.r, 50, (width + height) / 3, 0.8, 1.5);
+    // Modulate frequency based on size and position (narrower range)
+    let freqMod = map(loop.r, 50, (width + height) / 3, CONFIG.audioFreqModMin, CONFIG.audioFreqModMax);
     osc.freq(CONFIG.baseFrequency * freqMod + index * 30);
 
   } else {
