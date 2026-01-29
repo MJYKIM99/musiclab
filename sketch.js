@@ -40,12 +40,17 @@ let radiusPreview = 100;
  */
 let radiusState = -1;
 
-// Audio settings
-/** @constant {number} Maximum number of oscillators */
-const MAX_OSCILLATORS = 40;
-
-/** @constant {number} Base frequency in Hz */
-const BASE_FREQUENCY = 200;
+// Runtime configuration
+const CONFIG = {
+  maxOscillators: 40,
+  baseFrequency: 200,
+  targetFps: 30,
+  backgroundAlphaBase: 20,
+  backgroundAlphaMax: 60,
+  previewRadiusMin: 100,
+  previewRadiusMaxDivisor: 6,
+  audioMasterVolume: 0.3
+};
 
 // Visual settings
 /** @type {number} Background color value */
@@ -53,6 +58,9 @@ let backgroundColor = 0;
 
 /** @type {number} Background alpha transparency */
 let bgAlpha = 20;
+
+/** @type {number} Last stats update timestamp */
+let lastStatsUpdate = 0;
 
 /**
  * p5.js setup function - Initialize canvas, audio, and settings
@@ -65,7 +73,7 @@ function setup() {
   canvas.parent('sketch-holder');
 
   // Set frame rate for consistent animation
-  frameRate(30);
+  frameRate(CONFIG.targetFps);
 
   // Initialize audio context
   initAudio();
@@ -91,7 +99,7 @@ function draw() {
   let totalAmplitude = calculateTotalAmplitude();
 
   // Dynamic background based on audio and particle count
-  bgAlpha = 20 + constrain(totalAmplitude * 30, 0, 60) + loops.length / 4;
+  bgAlpha = CONFIG.backgroundAlphaBase + constrain(totalAmplitude * 30, 0, CONFIG.backgroundAlphaMax) + loops.length / 4;
   background(0, 0, 0, bgAlpha);
 
   // Update and display all loops
@@ -127,6 +135,9 @@ function draw() {
 
   // Draw radius preview circle at mouse position
   drawRadiusPreview();
+
+  // Update HUD stats periodically
+  updateStats();
 }
 
 /**
@@ -140,14 +151,14 @@ function initAudio() {
   reverb.amp(0.5);
 
   // Set master volume using p5.sound function
-  outputVolume(0.3);
+  outputVolume(CONFIG.audioMasterVolume);
 
   // Pre-create oscillators for better performance
-  for (let i = 0; i < MAX_OSCILLATORS; i++) {
+  for (let i = 0; i < CONFIG.maxOscillators; i++) {
     createOscillatorWithEnvelope(i);
   }
 
-  console.log(`Audio initialized with ${MAX_OSCILLATORS} oscillators`);
+  console.log(`Audio initialized with ${CONFIG.maxOscillators} oscillators`);
 }
 
 /**
@@ -165,7 +176,7 @@ function createOscillatorWithEnvelope(index) {
   osc.setType(waveTypes[index % waveTypes.length]);
 
   // Set frequency based on index
-  let freq = BASE_FREQUENCY + (index * 50) % 800;
+  let freq = CONFIG.baseFrequency + (index * 50) % 800;
   osc.freq(freq);
 
   // Create envelope for smooth attack/release
@@ -205,9 +216,9 @@ function handleLoopAudio(loop, index) {
     // Calculate stereo panning based on position
     let panning = constrain(
       map(width > height ? loop.pos.x : loop.pos.y,
-          0,
-          width > height ? width : height,
-          -1.0, 1.0),
+        0,
+        width > height ? width : height,
+        -1.0, 1.0),
       -1, 1
     );
     osc.pan(panning);
@@ -220,7 +231,7 @@ function handleLoopAudio(loop, index) {
 
     // Modulate frequency based on size and position
     let freqMod = map(loop.r, 50, (width + height) / 3, 0.8, 1.5);
-    osc.freq(BASE_FREQUENCY * freqMod + index * 30);
+    osc.freq(CONFIG.baseFrequency * freqMod + index * 30);
 
   } else {
     // Fade out
@@ -281,7 +292,7 @@ function calculateRadius(state, speed) {
   } else {
     radiusPreview = 100 + random(50);
   }
-  radiusPreview = constrain(radiusPreview, 100, (width + height) / 6);
+  radiusPreview = constrain(radiusPreview, CONFIG.previewRadiusMin, (width + height) / CONFIG.previewRadiusMaxDivisor);
   return radiusPreview;
 }
 
@@ -302,15 +313,18 @@ function createLoops(x, y, radius) {
   // Create random number of particles (1-10)
   let numLoops = Math.ceil(Math.random() * 10);
 
+  const remaining = Math.max(0, CONFIG.maxOscillators - loops.length);
+  if (remaining === 0) {
+    console.log('Loop limit reached');
+    return;
+  }
+
+  numLoops = Math.min(numLoops, remaining);
+
   for (let i = 0; i < numLoops; i++) {
     let randomRadius = radius + random(-20, 20);
     let newLoop = new Loop(randomRadius, x, y);
     loops.push(newLoop);
-  }
-
-  // Auto-reset if too many particles (performance)
-  if (loops.length > MAX_OSCILLATORS - 5) {
-    resetAll();
   }
 
   console.log(`Created ${numLoops} loops. Total: ${loops.length}`);
@@ -345,6 +359,28 @@ function resetAll() {
 
   // Clear background
   background(0);
+}
+
+/**
+ * Update stats panel
+ * @description Refreshes loop count, audio state, and FPS at a low cadence
+ * to avoid unnecessary DOM updates.
+ */
+function updateStats() {
+  const now = millis();
+  if (now - lastStatsUpdate < 300) return;
+  lastStatsUpdate = now;
+
+  const statsEl = document.getElementById('stats');
+  if (!statsEl) return;
+
+  const audioState = getAudioContext().state || 'unknown';
+  const fpsValue = Math.round(frameRate());
+
+  statsEl.innerHTML =
+    `<div>Loops: ${loops.length}</div>` +
+    `<div>Audio: ${audioState}</div>` +
+    `<div>FPS: ${fpsValue}</div>`;
 }
 
 /**

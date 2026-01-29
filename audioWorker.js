@@ -24,28 +24,28 @@ self.onmessage = function(e) {
   const { type, data } = e.data;
 
   switch (type) {
-    case 'INITIALIZE':
-      initializeAudio(data);
-      break;
+  case 'INITIALIZE':
+    initializeAudio(data);
+    break;
 
-    case 'UPDATE_PARAMS':
-      updateParams(data);
-      break;
+  case 'UPDATE_PARAMS':
+    updateParams(data);
+    break;
 
-    case 'CALCULATE_AUDIO':
-      calculateAudio(data);
-      break;
+  case 'CALCULATE_AUDIO':
+    calculateAudio(data);
+    break;
 
-    case 'PROCESS_BATCH':
-      processBatch(data);
-      break;
+  case 'PROCESS_BATCH':
+    processBatch(data);
+    break;
 
-    case 'GET_STATS':
-      getStats();
-      break;
+  case 'GET_STATS':
+    getStats();
+    break;
 
-    default:
-      console.warn('Unknown message type:', type);
+  default:
+    console.warn('Unknown message type:', type);
   }
 };
 

@@ -184,29 +184,29 @@ class Loop {
     let mode = Math.floor(clock1 + totalLoops / 2) % 6;
 
     switch (mode) {
-      case 0: // Spinning sine wave circle
-        return angle / TWO_PI * clock1 / 5 +
+    case 0: // Spinning sine wave circle
+      return angle / TWO_PI * clock1 / 5 +
                r * sin(frameCount / (800 * amp + 1) * totalLoops + clock) * cos(angle);
 
-      case 1: // Noise antenna
-        return angle / TWO_PI * clock1 / 5 * r *
+    case 1: // Noise antenna
+      return angle / TWO_PI * clock1 / 5 * r *
                noise(clock / 500, angle / 50) * noise(angle / 50);
 
-      case 2: // Noise dots and lines
-        return angle / TWO_PI * clock1 / 6 +
+    case 2: // Noise dots and lines
+      return angle / TWO_PI * clock1 / 6 +
                noise(clock / 5) * r * sin(frameCount / clock1 + clock) * cos(angle);
 
-      case 3: // Pure noise shape
-        return noise(angle) * r * sin(frameCount / 40 + clock) * cos(angle);
+    case 3: // Pure noise shape
+      return noise(angle) * r * sin(frameCount / 40 + clock) * cos(angle);
 
-      case 4: // Complex noise pattern
-        return noise(angle, clock) * pow(r / 2, 2) * cos(clock / 1000) * angle;
+    case 4: // Complex noise pattern
+      return noise(angle, clock) * pow(r / 2, 2) * cos(clock / 1000) * angle;
 
-      case 5: // Tangent-based organic shape
-        return noise(sin(angle), cos(angle)) * (r / 4) * pow(angle, 2) * tan(clock + 1);
+    case 5: // Tangent-based organic shape
+      return noise(sin(angle), cos(angle)) * (r / 4) * pow(angle, 2) * tan(clock + 1);
 
-      default:
-        return r * cos(angle);
+    default:
+      return r * cos(angle);
     }
   }
 

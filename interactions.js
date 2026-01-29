@@ -3,18 +3,33 @@
  * Mouse, touch, and keyboard interactions
  */
 
+const SCREENSHOT_COOLDOWN_MS = 1200;
+let lastScreenshotAt = 0;
+
+function canTakeScreenshot() {
+  const now = millis();
+  if (now - lastScreenshotAt < SCREENSHOT_COOLDOWN_MS) return false;
+  lastScreenshotAt = now;
+  return true;
+}
+
+/**
+ * Ensure audio context is running (browser autoplay policy)
+ */
+function ensureAudioContext() {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state !== 'running') {
+    ctx.resume();
+  }
+}
+
 /**
  * Mouse/Touch Press
  * Start growing the radius preview
  */
 function mousePressed() {
   radiusState = 1;
-
-  // Resume audio context if suspended (browser autoplay policy)
-  if (getAudioContext().state !== 'running') {
-    getAudioContext().resume();
-  }
-
+  ensureAudioContext();
   return false; // Prevent default
 }
 
@@ -54,12 +69,7 @@ function mouseReleased() {
  */
 function touchStarted() {
   radiusState = 1;
-
-  // Resume audio context if needed
-  if (getAudioContext().state !== 'running') {
-    getAudioContext().resume();
-  }
-
+  ensureAudioContext();
   return false; // Prevent default
 }
 
@@ -78,8 +88,10 @@ function touchMoved() {
   // Multi-touch gestures
   if (touches.length === 2) {
     // Two finger touch: take screenshot
-    saveCanvas('ocean-loop-' + frameCount, 'png');
-    console.log('Screenshot saved');
+    if (canTakeScreenshot()) {
+      saveCanvas('ocean-loop-' + frameCount, 'png');
+      console.log('Screenshot saved');
+    }
   }
 
   if (touches.length === 3) {
@@ -112,8 +124,10 @@ function touchEnded() {
 function keyPressed() {
   // Space - Save screenshot
   if (key === ' ') {
-    saveCanvas('ocean-loop-' + frameCount, 'png');
-    console.log('Screenshot saved');
+    if (canTakeScreenshot()) {
+      saveCanvas('ocean-loop-' + frameCount, 'png');
+      console.log('Screenshot saved');
+    }
     return false;
   }
 

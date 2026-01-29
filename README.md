@@ -15,6 +15,7 @@ Ocean Loop is an experimental web-based artwork that creates mesmerizing audio-v
 - **Collision Detection**: Particles interact with each other and respond to mouse/touch
 - **Responsive Design**: Works on desktop and mobile devices
 - **Multiple Interaction Modes**: Click, drag, keyboard shortcuts, and multi-touch gestures
+- **Live Status HUD**: Loop count, audio state, and FPS overlay
 
 ## 🎮 Controls
 
@@ -34,6 +35,7 @@ Ocean Loop is an experimental web-based artwork that creates mesmerizing audio-v
 - **H**: Hide/show info panel
 - **M**: Mute/unmute audio
 - **1-9**: Quick spawn (number = particle groups)
+- **HUD**: Shows loop count, audio state, FPS
 
 ### Mobile Gestures
 - **Two Finger Touch**: Take screenshot
@@ -149,7 +151,7 @@ The particle shapes cycle through 6 different mathematical patterns:
 ### Adjust Particle Count
 Edit `sketch.js`:
 ```javascript
-const MAX_OSCILLATORS = 40; // Change max particles
+const CONFIG = { maxOscillators: 40 }; // Change max particles
 ```
 
 ### Change Colors
