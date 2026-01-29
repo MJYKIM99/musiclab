@@ -42,6 +42,8 @@ class Loop {
     // Timing
     this.startTime = millis();
     this.lastSoundAt = 0;
+    this.soundUntil = 0;
+    this.soundStartAt = 0;
 
     // Color (for variation)
     this.hue = random(360);

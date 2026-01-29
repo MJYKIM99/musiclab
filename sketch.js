@@ -58,6 +58,8 @@ const CONFIG = {
   audioFreqModMax: 1.05,
   maxActiveSounds: 12,
   soundCooldownMs: 180,
+  soundMinDurationMs: 180,
+  soundMaxDurationMs: 700,
   lowpassFreq: 1200,
   lowpassRes: 1.1,
   reverbWet: 0.2
@@ -239,11 +241,28 @@ function handleLoopAudio(loop, index) {
   let shouldPlay = (loop.collisions.length % 3 === 1 && loop.clock1 > 160) ||
                    loop.collisions.mouse;
 
-  if (shouldPlay && isLoopVisible(loop)) {
-    const now = millis();
+  const now = millis();
+  if (shouldPlay) {
+    loop.soundUntil = Math.max(loop.soundUntil, now + CONFIG.soundMinDurationMs);
+  }
+
+  const isActive = now < loop.soundUntil && isLoopVisible(loop);
+
+  if (isActive) {
     const canPlay = now - loop.lastSoundAt > CONFIG.soundCooldownMs;
     if (!canPlay || activeSoundCount >= CONFIG.maxActiveSounds) {
       osc.amp(0, 0.1);
+      return;
+    }
+
+    if (loop.soundStartAt === 0) {
+      loop.soundStartAt = now;
+    }
+
+    if (now - loop.soundStartAt > CONFIG.soundMaxDurationMs) {
+      loop.soundUntil = 0;
+      loop.soundStartAt = 0;
+      osc.amp(0, 0.08);
       return;
     }
 
@@ -275,8 +294,9 @@ function handleLoopAudio(loop, index) {
     activeSoundCount++;
 
   } else {
+    loop.soundStartAt = 0;
     // Fade out
-    osc.amp(0, 0.1);
+    osc.amp(0, 0.08);
   }
 }
 
