@@ -201,8 +201,8 @@ function createOscillatorWithEnvelope(index) {
 
   // Create envelope for smooth attack/release
   let env = new p5.Envelope();
-  env.setADSR(0.5, 0.3, 0.4, 1.0);
-  env.setRange(0.3, 0);
+  env.setADSR(0.05, 0.2, 0.2, 0.6);
+  env.setRange(0.2, 0);
 
   // Connect to low-pass then reverb
   lowpass.process(osc);
@@ -252,7 +252,7 @@ function handleLoopAudio(loop, index) {
       volume *= 0.75;
     }
 
-    osc.amp(volume, 0.3);
+    osc.amp(volume, 0.2);
 
     // Modulate frequency based on size and position (narrower range)
     let freqMod = map(loop.r, 50, (width + height) / 3, CONFIG.audioFreqModMin, CONFIG.audioFreqModMax);
@@ -260,7 +260,7 @@ function handleLoopAudio(loop, index) {
 
   } else {
     // Fade out
-    osc.amp(0, 0.2);
+    osc.amp(0, 0.1);
   }
 }
 
